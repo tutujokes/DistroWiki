@@ -41,9 +41,18 @@ class CacheManager:
         """
         self.use_redis = use_redis
         self.redis_client = None
+        self._memory_cache = None  # Inicializar como None
         
         # Criar diretório de cache se não existir
-        self.CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            self.CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Cache directory ready: {self.CACHE_DIR}")
+        except PermissionError:
+            logger.warning(f"Sem permissão para criar cache dir em {self.CACHE_DIR}. Cache em memória será usado.")
+            self._memory_cache = {}
+        except Exception as e:
+            logger.warning(f"Erro ao criar cache dir: {e}. Cache em memória será usado.")
+            self._memory_cache = {}
         
         if use_redis:
             self._init_redis()
@@ -89,6 +98,22 @@ class CacheManager:
             Lista de DistroMetadata ou None se cache inválido/inexistente.
         """
         try:
+            # Se usando cache em memória (Vercel/sem permissão de escrita)
+            if self._memory_cache is not None:
+                if "distros" in self._memory_cache:
+                    cache_data = self._memory_cache["distros"]
+                    if self._is_cache_valid(cache_data):
+                        distros_data = cache_data.get("distros", [])
+                        distros = [
+                            DistroMetadata(**distro_dict) 
+                            for distro_dict in distros_data
+                        ]
+                        logger.info(f"Cache em memória recuperado: {len(distros)} distribuições")
+                        return distros
+                logger.info("Cache em memória não encontrado ou expirado")
+                return None
+            
+            # Cache em arquivo JSON
             if not self.cache_file_path.exists():
                 logger.info("Cache não encontrado")
                 return None
@@ -135,6 +160,12 @@ class CacheManager:
                     for distro in distros
                 ]
             }
+            
+            # Se usando cache em memória
+            if self._memory_cache is not None:
+                self._memory_cache["distros"] = cache_data
+                logger.info(f"Cache em memória atualizado: {len(distros)} distribuições")
+                return True
             
             # Salvar com pretty-print para debug
             with open(self.cache_file_path, 'w', encoding='utf-8') as f:
@@ -190,6 +221,12 @@ class CacheManager:
             True se invalidou com sucesso.
         """
         try:
+            # Se usando cache em memória
+            if self._memory_cache is not None:
+                self._memory_cache.clear()
+                logger.info("Cache em memória invalidado")
+                return True
+            
             if self.cache_file_path.exists():
                 self.cache_file_path.unlink()
                 logger.info("Cache invalidado")
