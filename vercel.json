@@ -1,8 +1,14 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
     {
       "src": "api/main.py",
       "use": "@vercel/python",
@@ -15,6 +21,14 @@
     {
       "src": "/api/(.*)",
       "dest": "api/main.py"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "dist/assets/$1"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "dist/robots.txt"
     },
     {
       "src": "/(.*)",
