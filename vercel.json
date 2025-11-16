@@ -8,20 +8,12 @@
       "config": {
         "distDir": "dist"
       }
-    },
-    {
-      "src": "handler.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "requirementsTxt": "requirements.txt"
-      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "handler.py"
+      "dest": "/api/$1"
     },
     {
       "src": "/assets/(.*)",
