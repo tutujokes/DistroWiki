@@ -3,6 +3,9 @@ Handler para Vercel - exporta a aplicação FastAPI.
 
 O Vercel precisa de um módulo Python que exporte a aplicação como 'app'.
 Este arquivo faz o bridge entre o routing do Vercel e a aplicação FastAPI.
+
+Nota: Este arquivo é nomeado como 'handler.py' e não 'api.py' para evitar 
+conflito com o pacote 'api/' que contém a aplicação.
 """
 
 import sys
