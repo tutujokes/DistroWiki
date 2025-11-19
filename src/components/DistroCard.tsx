@@ -57,7 +57,7 @@ const DistroCard = ({
   return (
     <div className="relative bg-card border border-border rounded-xl p-4 card-hover group h-full min-h-[9rem]">
       {showCheckbox && onSelectToggle && (
-        <div className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg border border-border shadow-lg">
+        <div className="absolute top-4 right-4 z-10">
           <Checkbox checked={isSelected} onCheckedChange={onSelectToggle} />
         </div>
       )}
